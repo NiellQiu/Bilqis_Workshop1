@@ -287,7 +287,7 @@ void AuthManager::logActivity(const std::string& action, const std::string& tabl
         
         pstmt->executeUpdate();
         delete pstmt;
-    } catch (sql::SQLException& e) {
+    } catch (sql::SQLException&) {
         // Silent fail for logging
     }
 }

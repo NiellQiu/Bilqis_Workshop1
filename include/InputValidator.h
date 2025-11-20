@@ -32,6 +32,12 @@ public:
     // IC number validation (basic)
     static bool isValidIC(const std::string& ic);
     
+    // Password validation with security requirements
+    static bool isValidPassword(const std::string& password, std::string& errorMessage);
+    
+    // Get password with validation
+    static std::string getPassword(const std::string& prompt, bool showRequirements = true);
+    
     // Confirmation prompt
     static bool confirm(const std::string& message);
     

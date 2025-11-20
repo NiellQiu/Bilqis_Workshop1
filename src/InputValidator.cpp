@@ -1,22 +1,36 @@
 #include "InputValidator.h"
 #include "UIColors.h"
+#include "MenuHandlers.h"  // For SCREEN_WIDTH
 #include <iostream>
 #include <iomanip>
 #include <ctime>
 #include <sstream>
 #include <algorithm>
 #include <limits>
+#include <cctype>
+#ifdef _WIN32
+#include <windows.h>
+#include <conio.h>
+#else
+#include <termios.h>
+#include <unistd.h>
+#endif
 
 int InputValidator::getInt(const std::string& prompt, int min, int max, bool allowRetry) {
     int value;
     std::string input;
     
     while (true) {
-        std::cout << prompt;
+        if (!prompt.empty()) {
+            UIColors::printCentered(prompt, SCREEN_WIDTH, UIColors::WHITE);
+            std::cout << "  ";
+        } else {
+            std::cout << prompt;
+        }
         std::getline(std::cin, input);
         
         if (input.empty()) {
-            showError("Input cannot be empty. Please enter a number.");
+            UIColors::printCentered("Input cannot be empty. Please enter a number.", SCREEN_WIDTH, UIColors::RED);
             if (!allowRetry) return 0;
             continue;
         }
@@ -25,14 +39,14 @@ int InputValidator::getInt(const std::string& prompt, int min, int max, bool all
             value = std::stoi(input);
             
             if (value < min || value > max) {
-                showError("Value must be between " + std::to_string(min) + " and " + std::to_string(max) + ".");
+                UIColors::printCentered("Value must be between " + std::to_string(min) + " and " + std::to_string(max) + ".", SCREEN_WIDTH, UIColors::RED);
                 if (!allowRetry) return 0;
                 continue;
             }
             
             return value;
         } catch (const std::exception&) {
-            showError("Invalid input. Please enter a valid number.");
+            UIColors::printCentered("Invalid input. Please enter a valid number.", SCREEN_WIDTH, UIColors::RED);
             if (!allowRetry) return 0;
         }
     }
@@ -73,7 +87,12 @@ std::string InputValidator::getString(const std::string& prompt, bool required, 
     std::string input;
     
     while (true) {
-        std::cout << prompt;
+        if (!prompt.empty()) {
+            UIColors::printCentered(prompt, SCREEN_WIDTH, UIColors::WHITE);
+            std::cout << "  ";
+        } else {
+            std::cout << prompt;
+        }
         std::getline(std::cin, input);
         
         // Trim whitespace
@@ -81,17 +100,17 @@ std::string InputValidator::getString(const std::string& prompt, bool required, 
         input.erase(input.find_last_not_of(" \t\n\r") + 1);
         
         if (required && input.empty()) {
-            showError("This field is required and cannot be empty.");
+            UIColors::printCentered("This field is required and cannot be empty.", SCREEN_WIDTH, UIColors::RED);
             continue;
         }
         
         if (input.length() < minLength) {
-            showError("Input must be at least " + std::to_string(minLength) + " characters long.");
+            UIColors::printCentered("Input must be at least " + std::to_string(minLength) + " characters long.", SCREEN_WIDTH, UIColors::RED);
             continue;
         }
         
         if (input.length() > maxLength) {
-            showError("Input must not exceed " + std::to_string(maxLength) + " characters.");
+            UIColors::printCentered("Input must not exceed " + std::to_string(maxLength) + " characters.", SCREEN_WIDTH, UIColors::RED);
             continue;
         }
         
@@ -145,9 +164,128 @@ bool InputValidator::isValidIC(const std::string& ic) {
     return std::regex_match(ic, pattern);
 }
 
+bool InputValidator::isValidPassword(const std::string& password, std::string& errorMessage) {
+    errorMessage = "";
+    
+    if (password.length() < 8) {
+        errorMessage = "Password must be at least 8 characters long.";
+        return false;
+    }
+    
+    if (password.length() > 50) {
+        errorMessage = "Password must not exceed 50 characters.";
+        return false;
+    }
+    
+    bool hasUpper = false, hasLower = false, hasDigit = false, hasSpecial = false;
+    
+    for (char c : password) {
+        if (std::isupper(c)) hasUpper = true;
+        else if (std::islower(c)) hasLower = true;
+        else if (std::isdigit(c)) hasDigit = true;
+        else if (std::ispunct(c)) hasSpecial = true;
+    }
+    
+    if (!hasUpper) {
+        errorMessage = "Password must contain at least one uppercase letter (A-Z).";
+        return false;
+    }
+    
+    if (!hasLower) {
+        errorMessage = "Password must contain at least one lowercase letter (a-z).";
+        return false;
+    }
+    
+    if (!hasDigit) {
+        errorMessage = "Password must contain at least one digit (0-9).";
+        return false;
+    }
+    
+    if (!hasSpecial) {
+        errorMessage = "Password must contain at least one special character (!@#$%^&*()_+-=[]{}|;:,.<>?).";
+        return false;
+    }
+    
+    return true;
+}
+
+std::string InputValidator::getPassword(const std::string& prompt, bool showRequirements) {
+    std::string password;
+    
+    if (showRequirements) {
+        std::cout << std::endl;
+        UIColors::printCentered("Password Requirements:", SCREEN_WIDTH, UIColors::YELLOW);
+        UIColors::printCentered("• At least 8 characters long", SCREEN_WIDTH, UIColors::WHITE);
+        UIColors::printCentered("• At least one uppercase letter (A-Z)", SCREEN_WIDTH, UIColors::WHITE);
+        UIColors::printCentered("• At least one lowercase letter (a-z)", SCREEN_WIDTH, UIColors::WHITE);
+        UIColors::printCentered("• At least one digit (0-9)", SCREEN_WIDTH, UIColors::WHITE);
+        UIColors::printCentered("• At least one special character (!@#$%^&*()_+-=[]{}|;:,.<>?)", SCREEN_WIDTH, UIColors::WHITE);
+        std::cout << std::endl;
+    }
+    
+    while (true) {
+        if (!prompt.empty()) {
+            UIColors::printCentered(prompt, SCREEN_WIDTH, UIColors::WHITE);
+        }
+        std::cout << "  ";
+        
+        // Mask password input
+        password = "";
+        char ch;
+#ifdef _WIN32
+        // Windows implementation
+        while ((ch = _getch()) != '\r' && ch != '\n') {
+            if (ch == '\b') {  // Backspace
+                if (!password.empty()) {
+                    password.pop_back();
+                    std::cout << "\b \b";
+                }
+            } else if (ch >= 32 && ch < 127) {  // Printable characters
+                password += ch;
+                std::cout << '*';
+            }
+        }
+        std::cout << std::endl;
+#else
+        // Linux/Unix implementation
+        struct termios oldt, newt;
+        tcgetattr(STDIN_FILENO, &oldt);
+        newt = oldt;
+        newt.c_lflag &= ~(ECHO);
+        tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+        
+        std::getline(std::cin, password);
+        
+        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+        std::cout << std::endl;
+#endif
+        
+        // Trim whitespace
+        password.erase(0, password.find_first_not_of(" \t\n\r"));
+        password.erase(password.find_last_not_of(" \t\n\r") + 1);
+        
+        if (password.empty()) {
+            UIColors::printCentered("Password cannot be empty.", SCREEN_WIDTH, UIColors::RED);
+            std::cout << std::endl;
+            continue;
+        }
+        
+        std::string errorMsg;
+        if (isValidPassword(password, errorMsg)) {
+            return password;
+        } else {
+            UIColors::printCentered(errorMsg, SCREEN_WIDTH, UIColors::RED);
+            std::cout << std::endl;
+            continue;
+        }
+    }
+}
+
 bool InputValidator::confirm(const std::string& message) {
     std::string input;
-    std::cout << "\n" << message << " (y/n): ";
+    std::cout << std::endl;
+    UIColors::printCentered(message + " (y/n): ", SCREEN_WIDTH, UIColors::YELLOW);
+    std::cout << "  ";
     std::getline(std::cin, input);
     
     // Convert to lowercase
@@ -162,7 +300,8 @@ void InputValidator::clearInputBuffer() {
 }
 
 void InputValidator::pause(const std::string& message) {
-    std::cout << "\n" << message;
+    std::cout << std::endl;
+    UIColors::printCentered(message, SCREEN_WIDTH, UIColors::CYAN);
     std::cin.get();
 }
 

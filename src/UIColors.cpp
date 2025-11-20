@@ -55,14 +55,51 @@ bool UIColors::colorsEnabled() {
 }
 
 void UIColors::printCentered(const std::string& text, int width, const std::string& color) {
-    int padding = (width - static_cast<int>(text.length())) / 2;
-    if (padding < 0) padding = 0;
-    
-    std::string output = std::string(padding, ' ') + text;
-    if (colors_enabled && !color.empty()) {
-        std::cout << color << output << RESET << std::endl;
+    // Handle long text by splitting into multiple lines
+    if (text.length() > static_cast<size_t>(width - 4)) {
+        // Split long text
+        std::istringstream iss(text);
+        std::string word;
+        std::string line;
+        
+        while (iss >> word) {
+            if ((line + word).length() < static_cast<size_t>(width - 4)) {
+                if (!line.empty()) line += " ";
+                line += word;
+            } else {
+                if (!line.empty()) {
+                    int padding = (width - static_cast<int>(line.length())) / 2;
+                    if (padding < 0) padding = 0;
+                    std::string output = std::string(padding, ' ') + line;
+                    if (colors_enabled && !color.empty()) {
+                        std::cout << color << output << RESET << std::endl;
+                    } else {
+                        std::cout << output << std::endl;
+                    }
+                }
+                line = word;
+            }
+        }
+        if (!line.empty()) {
+            int padding = (width - static_cast<int>(line.length())) / 2;
+            if (padding < 0) padding = 0;
+            std::string output = std::string(padding, ' ') + line;
+            if (colors_enabled && !color.empty()) {
+                std::cout << color << output << RESET << std::endl;
+            } else {
+                std::cout << output << std::endl;
+            }
+        }
     } else {
-        std::cout << output << std::endl;
+        int padding = (width - static_cast<int>(text.length())) / 2;
+        if (padding < 0) padding = 0;
+        
+        std::string output = std::string(padding, ' ') + text;
+        if (colors_enabled && !color.empty()) {
+            std::cout << color << output << RESET << std::endl;
+        } else {
+            std::cout << output << std::endl;
+        }
     }
 }
 
@@ -82,34 +119,38 @@ void UIColors::printSeparator(int width, char ch) {
 }
 
 void UIColors::printSuccess(const std::string& message) {
+    std::string fullMessage = "[SUCCESS] " + message;
     if (colors_enabled) {
-        std::cout << GREEN << "[SUCCESS] " << message << RESET << std::endl;
+        printCentered(fullMessage, 80, GREEN);
     } else {
-        std::cout << "[SUCCESS] " << message << std::endl;
+        printCentered(fullMessage, 80);
     }
 }
 
 void UIColors::printError(const std::string& message) {
+    std::string fullMessage = "[ERROR] " + message;
     if (colors_enabled) {
-        std::cout << RED << "[ERROR] " << message << RESET << std::endl;
+        printCentered(fullMessage, 80, RED);
     } else {
-        std::cout << "[ERROR] " << message << std::endl;
+        printCentered(fullMessage, 80);
     }
 }
 
 void UIColors::printWarning(const std::string& message) {
+    std::string fullMessage = "[WARNING] " + message;
     if (colors_enabled) {
-        std::cout << YELLOW << "[WARNING] " << message << RESET << std::endl;
+        printCentered(fullMessage, 80, YELLOW);
     } else {
-        std::cout << "[WARNING] " << message << std::endl;
+        printCentered(fullMessage, 80);
     }
 }
 
 void UIColors::printInfo(const std::string& message) {
+    std::string fullMessage = "[INFO] " + message;
     if (colors_enabled) {
-        std::cout << BLUE << "[INFO] " << message << RESET << std::endl;
+        printCentered(fullMessage, 80, BLUE);
     } else {
-        std::cout << "[INFO] " << message << std::endl;
+        printCentered(fullMessage, 80);
     }
 }
 
