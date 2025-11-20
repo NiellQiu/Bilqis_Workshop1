@@ -26,7 +26,7 @@ int InputValidator::getInt(const std::string& prompt, int min, int max, bool all
             UIColors::printCentered(prompt, SCREEN_WIDTH, UIColors::WHITE);
             std::cout << "  ";
         } else {
-            std::cout << prompt;
+        std::cout << prompt;
         }
         std::getline(std::cin, input);
         
@@ -62,7 +62,7 @@ double InputValidator::getDouble(const std::string& prompt, double min, double m
             UIColors::printCentered(prompt, SCREEN_WIDTH, UIColors::WHITE);
             std::cout << "  ";
         } else {
-            std::cout << prompt;
+        std::cout << prompt;
         }
         std::getline(std::cin, input);
         
@@ -97,7 +97,7 @@ std::string InputValidator::getString(const std::string& prompt, bool required, 
             UIColors::printCentered(prompt, SCREEN_WIDTH, UIColors::WHITE);
             std::cout << "  ";
         } else {
-            std::cout << prompt;
+        std::cout << prompt;
         }
         std::getline(std::cin, input);
         
@@ -215,7 +215,7 @@ bool InputValidator::isValidPassword(const std::string& password, std::string& e
     return true;
 }
 
-std::string InputValidator::getPassword(const std::string& prompt, bool showRequirements) {
+std::string InputValidator::getPassword(const std::string& prompt, bool showRequirements, bool skipValidation) {
     std::string password;
     
     if (showRequirements) {
@@ -274,6 +274,11 @@ std::string InputValidator::getPassword(const std::string& prompt, bool showRequ
             UIColors::printCentered("Password cannot be empty.", SCREEN_WIDTH, UIColors::RED);
             std::cout << std::endl;
             continue;
+        }
+        
+        // Skip validation for login (existing passwords may not meet new requirements)
+        if (skipValidation) {
+            return password;
         }
         
         std::string errorMsg;

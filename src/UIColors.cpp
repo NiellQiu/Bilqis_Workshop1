@@ -92,14 +92,14 @@ void UIColors::printCentered(const std::string& text, int width, const std::stri
             }
         }
     } else {
-        int padding = (width - static_cast<int>(text.length())) / 2;
-        if (padding < 0) padding = 0;
-        
-        std::string output = std::string(padding, ' ') + text;
-        if (colors_enabled && !color.empty()) {
-            std::cout << color << output << RESET << std::endl;
-        } else {
-            std::cout << output << std::endl;
+    int padding = (width - static_cast<int>(text.length())) / 2;
+    if (padding < 0) padding = 0;
+    
+    std::string output = std::string(padding, ' ') + text;
+    if (colors_enabled && !color.empty()) {
+        std::cout << color << output << RESET << std::endl;
+    } else {
+        std::cout << output << std::endl;
         }
     }
 }

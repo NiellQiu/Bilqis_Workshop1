@@ -36,7 +36,7 @@ public:
     static bool isValidPassword(const std::string& password, std::string& errorMessage);
     
     // Get password with validation
-    static std::string getPassword(const std::string& prompt, bool showRequirements = true);
+    static std::string getPassword(const std::string& prompt, bool showRequirements = true, bool skipValidation = false);
     
     // Confirmation prompt
     static bool confirm(const std::string& message);

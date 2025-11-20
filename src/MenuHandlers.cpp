@@ -32,7 +32,7 @@ bool showLoginScreen() {
         UIColors::printCentered("Username: ", SCREEN_WIDTH, UIColors::WHITE);
         std::string username = InputValidator::getString("", true, 3, 50);
         UIColors::printCentered("Password: ", SCREEN_WIDTH, UIColors::WHITE);
-        std::string password = InputValidator::getPassword("", false);  // Don't show requirements on login
+        std::string password = InputValidator::getPassword("", false, true);  // Skip validation for login
         
         if (auth.login(username, password)) {
             User* user = auth.getCurrentUser();
@@ -428,12 +428,16 @@ void dressManagementMenu() {
                 dress.Color = InputValidator::getString("Color*: ", true, 2, 30);
                 dress.RentalPrice = InputValidator::getDouble("Rental Price (RM)*: ", 0.01, 10000.0);
                 
-                std::cout << UIColors::colorize("Condition Status", UIColors::YELLOW) << " (Good/Fair/Poor) [Good]: ";
+                std::string condPrompt = "Condition Status (Good/Fair/Poor) [Good]: ";
+                UIColors::printCentered(condPrompt, SCREEN_WIDTH, UIColors::YELLOW);
+                std::cout << "  ";
                 std::string cond;
                 std::getline(std::cin, cond);
                 dress.ConditionStatus = cond.empty() ? "Good" : cond;
                 
-                std::cout << UIColors::colorize("Availability Status", UIColors::YELLOW) << " (Available/Rented/Maintenance) [Available]: ";
+                std::string availPrompt = "Availability Status (Available/Rented/Maintenance) [Available]: ";
+                UIColors::printCentered(availPrompt, SCREEN_WIDTH, UIColors::YELLOW);
+                std::cout << "  ";
                 std::string avail;
                 std::getline(std::cin, avail);
                 dress.AvailabilityStatus = avail.empty() ? "Available" : avail;
