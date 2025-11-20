@@ -250,7 +250,6 @@ void ReportManager::generateOverdueItemsReport() {
               << std::setw(20) << "Days Overdue" << std::setw(20) << "Late Fee (RM)" << std::endl;
     std::cout << std::string(120, '=') << std::endl;
     
-    CustomerManager cm;
     for (const auto& rental : overdueRentals) {
         // Calculate days overdue
         std::tm dueTm = {};

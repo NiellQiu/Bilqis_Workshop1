@@ -15,10 +15,16 @@ std::string RentalManager::calculateDueDate(const std::string& rentalDate, int d
     
     std::time_t time = std::mktime(&tm);
     time += duration * 24 * 60 * 60;
-    std::tm* dueTm = std::localtime(&time);
+    std::tm dueTm;
+#ifdef _WIN32
+    localtime_s(&dueTm, &time);
+#else
+    std::tm* temp = std::localtime(&time);
+    dueTm = *temp;
+#endif
     
     std::ostringstream oss;
-    oss << std::put_time(dueTm, "%Y-%m-%d");
+    oss << std::put_time(&dueTm, "%Y-%m-%d");
     return oss.str();
 }
 

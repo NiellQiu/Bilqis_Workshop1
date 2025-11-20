@@ -620,7 +620,6 @@ void rentalManagementMenu() {
     }
     
     RentalManager rm;
-    PaymentManager pm;
     CustomerManager cm;
     DressManager dm;
     int choice;
